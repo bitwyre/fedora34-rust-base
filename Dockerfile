@@ -50,6 +50,8 @@ RUN dnf install -y \
 
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- --default-toolchain stable -y
 
+RUN dnf clean all
+
 ENV PATH="/root/.cargo/bin:${PATH}"
 
 RUN rustup default 1.52.1 && \

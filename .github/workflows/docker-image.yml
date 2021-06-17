@@ -5,7 +5,7 @@ on:
     types: [published]
 
 env:
-  IMAGE_NAME: fedora34-build-base
+  IMAGE_NAME: rust-stable
 
 jobs:
   docker-publish:
