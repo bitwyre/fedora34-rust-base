@@ -5,17 +5,26 @@ on:
     types: [published]
 
 env:
-  IMAGE_NAME: rust-stable
+  IMAGE_NAME: linux-stable
+  DOCKER_IMAGE_NAME: kresna360/fedora34-rust-base
 
 jobs:
-  docker-publish:
+  docker-publish-stable:
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v2
     - name: Build & Publish
       run: |
+        # Build Image
         docker build -f Dockerfile -t $IMAGE_NAME .
+
+        # Login Github Docker Registry
         echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+        # Login Docker Hub
+        echo "${{ secrets.DOCKER_KEY }}" | docker login -u kresna360 --password-stdin
+
+        # Github Package Registry Tag & Push
         IMAGE_ID=ghcr.io/${{ github.repository }}/$IMAGE_NAME 
         IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
         VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
@@ -25,5 +34,17 @@ jobs:
         docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
         docker push $IMAGE_ID:$VERSION
         VERSION=latest
+        docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
+        docker push $IMAGE_ID:$VERSION
+
+        # Docker Hub Tag & Push
+        IMAGE_ID=$DOCKER_IMAGE_NAME
+        VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
+        [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$IMAGE_NAME-$(echo $VERSION | sed -e 's/^v//')
+        echo IMAGE_ID=$IMAGE_ID
+        echo VERSION=$VERSION
+        docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
+        docker push $IMAGE_ID:$VERSION
+        VERSION=$IMAGE_NAME-latest
         docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
         docker push $IMAGE_ID:$VERSION
