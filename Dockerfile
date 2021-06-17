@@ -13,6 +13,7 @@ RUN dnf install -y \
     clang-tools-extra \
     cmake \
     curl \
+    cyrus-sasl-devel \
     elfutils-devel \
     g++ \
     gcc \
